@@ -1,4 +1,5 @@
 import { NextFunction, Response } from 'express';
+import httpStatus from 'http-status';
 import { AuthenticatedRequest } from '@/middlewares';
 import ticketsService from '@/services/tickets-service';
 
@@ -19,13 +20,16 @@ async function getAllUserTicket(req: AuthenticatedRequest, res: Response, next: 
     const allUserTicket = await ticketsService.getAllUserTicket({ userId });
     res.status(200).send(allUserTicket);
   } catch (error) {
-    next(error);
+    return res.sendStatus(httpStatus.NOT_FOUND);
+    /* console.log(error);
+    next(error); */
   }
 }
 
 async function postTicket(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
   } catch (error) {
+    return res.sendStatus(httpStatus.NOT_FOUND);
     next(error);
   }
 }

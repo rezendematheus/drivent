@@ -12,9 +12,9 @@ async function findManyTicketType(): Promise<TicketType[]> {
 }
 
 async function findByEnrollmentId({ enrollmentId }: { enrollmentId: number }) {
-  const result = await prisma.ticket.findMany({
+  const result = await prisma.ticket.findFirst({
     where: {
-      enrollmentId: enrollmentId,
+      enrollmentId: enrollmentId || 0,
     },
     include: {
       TicketType: true,
