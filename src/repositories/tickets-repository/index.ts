@@ -1,9 +1,10 @@
-import { TicketType } from '@prisma/client';
+import { Ticket, TicketType } from '@prisma/client';
 import { prisma } from '@/config';
 
 const ticketsRepository = {
   findManyTicketType,
   findByEnrollmentId,
+  insert,
 };
 
 async function findManyTicketType(): Promise<TicketType[]> {
@@ -20,6 +21,17 @@ async function findByEnrollmentId({ enrollmentId }: { enrollmentId: number }) {
       TicketType: true,
     },
   });
+  return result;
+}
+
+async function insert(Ticket: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt'>) {
+  const result = await prisma.ticket.create({
+    data: Ticket,
+    include: {
+      TicketType: true,
+    },
+  });
+
   return result;
 }
 
