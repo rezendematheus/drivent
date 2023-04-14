@@ -4,8 +4,21 @@ import { prisma } from '@/config';
 const ticketsRepository = {
   findManyTicketType,
   findByEnrollmentId,
+  findById,
   insert,
 };
+
+function findById(ticketId: number) {
+  const result = prisma.ticket.findUnique({
+    where: {
+      id: ticketId,
+    },
+    include: {
+      Enrollment: true,
+    },
+  });
+  return result;
+}
 
 async function findManyTicketType(): Promise<TicketType[]> {
   const result = await prisma.ticketType.findMany();
