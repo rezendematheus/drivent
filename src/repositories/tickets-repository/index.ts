@@ -1,20 +1,31 @@
-import { Ticket, TicketType } from '@prisma/client';
+import { Enrollment, Ticket, TicketStatus, TicketType } from '@prisma/client';
 import { prisma } from '@/config';
+import { newTicket } from '@/protocols';
 
 const ticketsRepository = {
   findManyTicketType,
   findByEnrollmentId,
   findById,
   insert,
+  update,
 };
 
-function findById(ticketId: number) {
-  const result = prisma.ticket.findUnique({
+async function findById(
+  ticketId: number,
+  ticketType?: boolean,
+): Promise<
+  Ticket & {
+    Enrollment: Enrollment;
+    TicketType: TicketType;
+  }
+> {
+  const result = await prisma.ticket.findUnique({
     where: {
       id: ticketId,
     },
     include: {
       Enrollment: true,
+      TicketType: ticketType,
     },
   });
   return result;
@@ -37,14 +48,25 @@ async function findByEnrollmentId({ enrollmentId }: { enrollmentId: number }) {
   return result;
 }
 
-async function insert(Ticket: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt'>) {
+async function insert(Ticket: newTicket) {
   const result = await prisma.ticket.create({
-    data: Ticket,
+    data: Ticket as Omit<Ticket, 'id' | 'createdAt' | 'updatedAt'>,
     include: {
       TicketType: true,
     },
   });
+  return result;
+}
 
+async function update(Ticket: newTicket) {
+  const result = await prisma.ticket.update({
+    where: {
+      id: Ticket.id,
+    },
+    data: {
+      status: Ticket.status as TicketStatus,
+    },
+  });
   return result;
 }
 

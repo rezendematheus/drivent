@@ -5,8 +5,8 @@ const paymentRepository = {
   findByTicketId,
   insert,
 };
-function findByTicketId({ ticketId }: { ticketId: number }) {
-  const result = prisma.payment.findFirst({
+async function findByTicketId({ ticketId }: { ticketId: number }): Promise<Payment> {
+  const result = await prisma.payment.findFirst({
     where: {
       ticketId: ticketId,
     },
@@ -14,13 +14,9 @@ function findByTicketId({ ticketId }: { ticketId: number }) {
   return result;
 }
 
-function insert(paymentInfo: Payment) {
-  const result = prisma.payment.upsert({
-    where: {
-      id: paymentInfo.id || 0,
-    },
-    create: paymentInfo as Omit<Payment, 'id' | 'createdAt' | 'updatedAt'>,
-    update: paymentInfo,
+async function insert(paymentInfo: Omit<Payment, 'id' | 'createdAt' | 'updatedAt'>): Promise<Payment> {
+  const result = await prisma.payment.create({
+    data: paymentInfo as Omit<Payment, 'id' | 'createdAt' | 'updatedAt'>,
   });
   return result;
 }

@@ -1,3 +1,5 @@
+import { Ticket } from '@prisma/client';
+
 export type ApplicationError = {
   name: string;
   message: string;
@@ -27,3 +29,16 @@ export type RequestError = {
   name: string;
   message: string;
 };
+
+export type paymentRequest = {
+  ticketId: number;
+  cardData: {
+    issuer: string;
+    number: number;
+    name: string;
+    expirationDate: Date;
+    cvv: number;
+  };
+};
+
+export type newTicket = Partial<Ticket>;
