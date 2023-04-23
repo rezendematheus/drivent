@@ -4,9 +4,8 @@ import * as jwt from 'jsonwebtoken';
 import supertest from 'supertest';
 import { cleanDb, generateValidToken } from '../helpers';
 import { createEnrollmentWithAddress, createTicket, createTicketType, createUser } from '../factories';
-import { createBooking, createHotel, createHotelRoom, createHotelRoomBooking } from '../factories/hotels-factory';
+import { createHotel, createHotelRoom, createHotelRoomBooking } from '../factories/hotels-factory';
 import app, { init } from '@/app';
-import { prisma } from '@/config';
 
 beforeAll(async () => {
   await init();

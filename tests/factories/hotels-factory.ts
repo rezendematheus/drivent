@@ -1,5 +1,5 @@
 import faker from '@faker-js/faker';
-import { Booking, Hotel, Room } from '@prisma/client';
+import { Hotel, Room } from '@prisma/client';
 import { prisma } from '@/config';
 
 export async function createHotel(params?: Partial<Hotel>): Promise<Hotel> {
