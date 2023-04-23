@@ -40,7 +40,9 @@ async function getHotelById(params: { hotelId: number; userId: number }) {
   /* const booking = await hotelsRepository.findBookingByUserId(userId);
   if (!booking) throw notFoundError(); */
 
-  return await hotelsRepository.findUniqueHotel(hotelId);
+  const hotel = await hotelsRepository.findUniqueHotel(hotelId);
+  if(!hotel) throw notFoundError();
+  return hotel
 }
 
 export default hotelsService;

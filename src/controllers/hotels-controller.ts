@@ -23,7 +23,7 @@ export async function getHotelById(req: AuthenticatedRequest, res: Response, nex
     const { userId } = req;
     const hotel = await hotelsService.getHotelById({ hotelId: Number(hotelId), userId });
 
-    res.status(httpStatus.OK).send([hotel]);
+    res.status(httpStatus.OK).send(hotel);
   } catch (error) {
     next(error);
   }

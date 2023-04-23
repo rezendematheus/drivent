@@ -236,7 +236,7 @@ describe('GET /hotels/:id', () => {
 
       const response = await server.get(`/hotels/${booking.Room.Hotel.id}`).set('Authorization', `Bearer ${token}`);
       expect(response.status).toBe(200);
-      expect(response.body).toEqual([
+      expect(response.body).toEqual(
         {
           id: booking.Room.Hotel.id,
           name: booking.Room.Hotel.name,
@@ -254,7 +254,7 @@ describe('GET /hotels/:id', () => {
             },
           ],
         },
-      ]);
+      );
     });
   });
 });
