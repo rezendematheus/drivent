@@ -98,6 +98,13 @@ describe('GET /hotels/:id', () => {
     expect(response.status).toBe(httpStatus.UNAUTHORIZED);
   });
   describe('when token is valid', () => {
+    it('Should return status 400 when invalid hotelId format is given', async () => {
+      const token = await generateValidToken();
+
+      const response = await server.get(`/hotels/${faker.lorem.word}`).set('Authorization', `Bearer ${token}`);
+      expect(response.status).toBe(httpStatus.BAD_REQUEST);
+    });
+
     it('Should return status 404 when enrollment does not exist', async () => {
       const user = await createUser();
       const token = await generateValidToken(user);

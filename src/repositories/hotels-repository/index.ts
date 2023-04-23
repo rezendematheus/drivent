@@ -24,10 +24,10 @@ function findUniqueHotel(id: number) {
     },
   });
 }
-function findBookingByUserId(id: number) {
-  return prisma.booking.findUnique({
+function findBookingByUserId(userId: number) {
+  return prisma.booking.findFirst({
     where: {
-      id,
+      userId,
     },
   });
 }

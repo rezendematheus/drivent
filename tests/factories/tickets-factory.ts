@@ -7,8 +7,8 @@ export async function createTicketType(params?: Partial<TicketType>) {
     data: {
       name: faker.name.findName(),
       price: faker.datatype.number(),
-      isRemote: faker.datatype.boolean() || params.isRemote,
-      includesHotel: faker.datatype.boolean() || params.includesHotel,
+      isRemote: params?.isRemote,
+      includesHotel: params?.includesHotel,
     },
   });
 }
