@@ -37,8 +37,8 @@ async function getHotelById(params: { hotelId: number; userId: number }) {
   if (!ticket.TicketType.includesHotel) throw paymentRequired();
   if (ticket.status !== 'PAID') throw paymentRequired();
 
-  const booking = await hotelsRepository.findBookingByUserId(userId);
-  if (!booking) throw notFoundError();
+  /* const booking = await hotelsRepository.findBookingByUserId(userId);
+  if (!booking) throw notFoundError(); */
 
   return await hotelsRepository.findUniqueHotel(hotelId);
 }
