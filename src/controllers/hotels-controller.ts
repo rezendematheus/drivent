@@ -6,7 +6,8 @@ import { badRequest } from '@/errors/bad-request';
 
 export async function getAllHotels(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
-    const hotels = await hotelsService.getAllHotels();
+    const { userId } = req;
+    const hotels = await hotelsService.getAllHotels(userId);
 
     res.status(httpStatus.OK).send(hotels);
   } catch (error) {
