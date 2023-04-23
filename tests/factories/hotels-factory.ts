@@ -4,18 +4,18 @@ import { prisma } from '@/config';
 
 export async function createHotel(params?: Partial<Hotel>): Promise<Hotel> {
   const hotel = {
-    name: params.name || faker.lorem.word(),
-    image: params.image || faker.image.imageUrl(),
+    name: faker.lorem.word() || params.name,
+    image: faker.image.imageUrl() || params.image,
   };
   return prisma.hotel.create({
     data: hotel,
   });
 }
 
-export async function createHotelRoom(params?: Partial<Room>): Promise<Room> {
+export async function createHotelRoom(params?: { hotelId: number } & Partial<Room>): Promise<Room> {
   const room = {
-    name: params.name || faker.lorem.word(),
-    capacity: params.capacity || Number(faker.random.numeric()),
+    name: faker.lorem.word() || params.name,
+    capacity: Number(faker.random.numeric()) || params.capacity,
     hotelId: params.hotelId,
   };
   return prisma.room.create({
