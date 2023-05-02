@@ -2,8 +2,19 @@ import supertest from 'supertest';
 import * as jwt from 'jsonwebtoken';
 import httpStatus from 'http-status';
 import faker from '@faker-js/faker';
+import { TicketStatus } from '@prisma/client';
 import { createBooking } from '../factories/booking-factory';
-import { createEnrollmentWithAddress, createHotel, createRoomWithHotelId, createUser } from '../factories';
+import {
+  createEnrollmentWithAddress,
+  createHotel,
+  createRoomWithHotelId,
+  createTicket,
+  createTicketType,
+  createTicketTypeRemote,
+  createTicketTypeWithHotel,
+  createTicketTypeWithoutHotel,
+  createUser,
+} from '../factories';
 import { cleanDb, generateValidToken } from '../helpers';
 import app, { init } from '@/app';
 
@@ -70,7 +81,15 @@ describe('GET /booking', () => {
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual({
-        bookingId: booking.id,
+        id: booking.id,
+        Room: {
+          id: expect.any(Number),
+          name: expect.any(String),
+          capacity: expect.any(Number),
+          hotelId: expect.any(Number),
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+        },
       });
     });
   });
@@ -100,7 +119,40 @@ describe('POST /booking', () => {
     expect(response.status).toBe(httpStatus.UNAUTHORIZED);
   });
   describe('when token is valid', () => {
-    it('should respond with status 403 if users does not have enrollment', async () => {
+    it('should respond with status 403 if the user does not have a ticket', async () => {
+      const user = await createUser();
+      await createEnrollmentWithAddress(user);
+      await createTicketType();
+      const token = await generateValidToken();
+
+      const response = await server.post('/booking').set('Authorization', `Bearar ${token}`);
+      expect(response.status).toBe(403);
+    });
+    it('should respond with status 403 if the ticket is remote', async () => {
+      const user = await createUser();
+      const enrollment = await createEnrollmentWithAddress(user);
+      const ticketType = await createTicketTypeRemote();
+      await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
+      const token = await generateValidToken();
+
+      const response = await server.post('/booking').set('Authorization', `Bearar ${token}`);
+      expect(response.status).toBe(403);
+    });
+    it('should respond with status 403 if the ticket do not include hotel', async () => {
+      const user = await createUser();
+      const enrollment = await createEnrollmentWithAddress(user);
+      const ticketType = await createTicketTypeWithoutHotel();
+      await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
+      const token = await generateValidToken();
+
+      const response = await server.post('/booking').set('Authorization', `Bearar ${token}`);
+      expect(response.status).toBe(403);
+    });
+    it('should respond with status 403 if the ticket is not paid already', async () => {
+      const user = await createUser();
+      const enrollment = await createEnrollmentWithAddress(user);
+      const ticketType = await createTicketTypeWithHotel();
+      await createTicket(enrollment.id, ticketType.id, TicketStatus.RESERVED);
       const token = await generateValidToken();
 
       const response = await server.post('/booking').set('Authorization', `Bearar ${token}`);
@@ -108,8 +160,10 @@ describe('POST /booking', () => {
     });
     it('should respond with status 404 when given invalid partition roomId', async () => {
       const user = await createUser();
+      const enrollment = await createEnrollmentWithAddress(user);
+      const ticketType = await createTicketTypeWithHotel();
+      await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
       const token = await generateValidToken(user);
-      await createEnrollmentWithAddress(user);
       const hotel = await createHotel();
       await createRoomWithHotelId(hotel.id);
       const body = {
@@ -121,7 +175,9 @@ describe('POST /booking', () => {
     });
     it('should respond with status 404 when theres no room to match valid partition roomId', async () => {
       const user = await createUser();
-      await createEnrollmentWithAddress(user);
+      const enrollment = await createEnrollmentWithAddress(user);
+      const ticketType = await createTicketTypeWithHotel();
+      await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
       const token = await generateValidToken(user);
       const hotel = await createHotel();
       await createRoomWithHotelId(hotel.id);
@@ -134,7 +190,9 @@ describe('POST /booking', () => {
     });
     it('should respond with status 403 when the room is already booked', async () => {
       const user = await createUser();
-      await createEnrollmentWithAddress(user);
+      const enrollment = await createEnrollmentWithAddress(user);
+      const ticketType = await createTicketTypeWithHotel();
+      await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
       const token = await generateValidToken(user);
       const hotel = await createHotel();
       const room = await createRoomWithHotelId(hotel.id);
@@ -149,7 +207,9 @@ describe('POST /booking', () => {
 
     it('should respond with status 201 when the booking is sucessfully created', async () => {
       const user = await createUser();
-      await createEnrollmentWithAddress(user);
+      const enrollment = await createEnrollmentWithAddress(user);
+      const ticketType = await createTicketTypeWithHotel();
+      await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
       const token = await generateValidToken(user);
       const hotel = await createHotel();
       const room = await createRoomWithHotelId(hotel.id);
@@ -158,7 +218,7 @@ describe('POST /booking', () => {
       };
 
       const response = await server.post('/booking').set('Authorization', `Bearer ${token}`).send(body);
-      expect(response.status).toBe(201);
+      expect(response.status).toBe(200);
       expect(response.body).toEqual({
         bookingId: expect.any(Number),
       });
@@ -217,7 +277,7 @@ describe('PUT /booking/:bookingId', () => {
         .put(`/booking/${booking.id + 1}`)
         .set('Authorization', `Bearer ${token}`)
         .send(body);
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(403);
     });
 
     it('should respond with status 404 given invalid partition bookingId', async () => {
@@ -232,7 +292,7 @@ describe('PUT /booking/:bookingId', () => {
       };
 
       const response = await server.put(`/booking/-1`).set('Authorization', `Bearer ${token}`).send(body);
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(403);
     });
 
     it('should respond with status 404 when given roomId does not exist', async () => {

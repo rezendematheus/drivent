@@ -16,6 +16,11 @@ function getBookingByUserId(userId: number) {
     },
     select: {
       id: true,
+      createdAt: false,
+      updatedAt: false,
+      userId: false,
+      roomId: false,
+      Room: true,
     },
   });
 }

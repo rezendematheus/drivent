@@ -3,6 +3,7 @@ import { forbiddenError } from '@/errors/forbidden-error';
 import bookingRepository from '@/repositories/booking-repository';
 import enrollmentRepository from '@/repositories/enrollment-repository';
 import hotelRepository from '@/repositories/hotel-repository';
+import ticketsRepository from '@/repositories/tickets-repository';
 
 const bookingService = {
   getBookingByUserId,
@@ -17,12 +18,16 @@ async function getBookingByUserId(userId: number) {
   const booking = await bookingRepository.getBookingByUserId(userId);
 
   if (!booking) throw notFoundError();
-  return { bookingId: booking.id };
+  return booking;
 }
 
 async function createBooking(params: bookingCreateParams) {
   const enrollment = await enrollmentRepository.findWithAddressByUserId(params.userId);
   if (!enrollment) throw forbiddenError();
+
+  const ticket = await ticketsRepository.findTicketByEnrollmentId(enrollment.id);
+  if (ticket.TicketType.isRemote === true || ticket.TicketType.includesHotel === false || ticket.status === 'RESERVED')
+    throw forbiddenError();
 
   const roomExists = await hotelRepository.findRoomById(params.roomId);
   if (!roomExists) throw notFoundError();
@@ -36,8 +41,9 @@ async function createBooking(params: bookingCreateParams) {
 async function updateBookingRoom(params: updateBookingParams & { userId: number }) {
   const enrollment = await enrollmentRepository.findWithAddressByUserId(params.userId);
   if (!enrollment) throw forbiddenError();
+
   const bookingExists = await bookingRepository.findBookingbyId(params.bookingId);
-  if (!bookingExists) throw notFoundError();
+  if (!bookingExists) throw forbiddenError();
 
   if (bookingExists.userId !== params.userId) throw forbiddenError();
 
