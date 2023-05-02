@@ -46,7 +46,6 @@ describe('GET /hotels', () => {
     const token = jwt.sign({ userId: userWithoutSession.id }, process.env.JWT_SECRET);
 
     const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
-
     expect(response.status).toBe(httpStatus.UNAUTHORIZED);
   });
 
